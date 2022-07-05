@@ -2,12 +2,17 @@ package main
 
 import (
 	"net/http"
+	"strings"
+
+	"os/exec"
 
 	"github.com/gin-gonic/gin"
-	"os/exec"
 )
 
-var db = make(map[string]string)
+type ExecRequest struct {
+	Command string `json:"command" binding:"required"`
+	Path    string `json:"path" binding:"required"`
+}
 
 func setupRouter() *gin.Engine {
 	r := gin.Default()
@@ -16,18 +21,17 @@ func setupRouter() *gin.Engine {
 		c.String(http.StatusOK, "pong")
 	})
 
-	r.GET("/exec-be", func(c *gin.Context) {
-		path := c.DefaultQuery("path", "/opt/playground/backend/unittest")
-		cmd := exec.Command("go", "test", "-v")
-		cmd.Dir = path
-		stdoutStderr, _ := cmd.CombinedOutput()
+	r.POST("/exec", func(c *gin.Context) {
+		execRequest := ExecRequest{}
+		if err := c.ShouldBindJSON(&execRequest); err != nil {
+			c.Error(err)
+			c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"success": false, "message": err.Error()})
+			return
+		}
 
-		c.String(http.StatusOK, string(stdoutStderr))
-	})
-
-	r.GET("/exec-fe", func(c *gin.Context) {
-		path := c.DefaultQuery("path", "/opt/playground/frontend/unittest")
-		cmd := exec.Command("npm", "run", "test", "--prefix", "/opt/playground", path, "--", "--watchAll=false")
+		commandSplitted := strings.Split(execRequest.Command, " ")
+		cmd := exec.Command(commandSplitted[0], commandSplitted[1:]...)
+		cmd.Dir = execRequest.Path
 		stdoutStderr, _ := cmd.CombinedOutput()
 
 		c.String(http.StatusOK, string(stdoutStderr))

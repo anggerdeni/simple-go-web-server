@@ -1,4 +1,4 @@
-module simple-go-web-server
+module assignment-runner-base
 
 go 1.18
 

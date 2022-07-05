@@ -3,6 +3,7 @@ FROM golang:alpine as build
 COPY main.go go.* /src/
 WORKDIR /src
 RUN CGO_ENABLED=0 go build -o /bin/server
+RUN rm -rf /src
 
 
 FROM alpine:3.16.0
@@ -23,8 +24,5 @@ RUN adduser \
     $user
 
 RUN echo $user:pw | chpasswd
-
-RUN npm install -g jest@27.5.1 "@playwright/test@1.20.2" axios@0.27.1
-RUN git clone https://github.com/anggerdeni/sample-rg-playground.git /opt/playground
 EXPOSE 8080
 ENTRYPOINT ["/bin/server"]
