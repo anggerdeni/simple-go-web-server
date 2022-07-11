@@ -14,9 +14,8 @@ RUN build_gcsfuse . /tmp $(git log -1 --format=format:"%H")
 
 FROM alpine:3.16.0
 COPY --from=build /bin/server /bin/server
-COPY --from=gcsfusebuilder /tmp/bin/gcsfuse /usr/local/bin/gcsfuse
-COPY --from=gcsfusebuilder /tmp/sbin/mount.gcsfuse /usr/sbin/mount.gcsfuse
 RUN apk add --no-cache tini fuse go
+RUN GO111MODULE=auto go get -u github.com/googlecloudplatform/gcsfuse
 EXPOSE 8080
 COPY gcsfuse_run.sh /app/gcsfuse_run.sh
 RUN chmod +x /app/gcsfuse_run.sh
