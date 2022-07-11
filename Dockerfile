@@ -17,6 +17,7 @@ RUN apk add --no-cache tini go
 EXPOSE 8080
 
 COPY gcsfuse_run.sh /app/gcsfuse_run.sh
+RUN chmod +x /app/gcsfuse_run.sh
 
 # Use tini to manage zombie processes and signal forwarding
 # https://github.com/krallin/tini
