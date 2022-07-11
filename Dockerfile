@@ -5,6 +5,7 @@ RUN CGO_ENABLED=0 go build -o /bin/server
 RUN rm -rf /src
 
 FROM golang:alpine AS gcsfusebuilder
+ENV GO111MODULE=off
 ARG GCSFUSE_VERSION=0.41.4
 RUN apk --update --no-cache add git fuse fuse-dev;
 RUN go get -d github.com/googlecloudplatform/gcsfuse
