@@ -1,6 +1,6 @@
 FROM golang:alpine as build
 
-COPY main.go go.* /src/
+COPY src /src/
 WORKDIR /src
 RUN CGO_ENABLED=0 go build -o /bin/server
 RUN rm -rf /src
@@ -13,16 +13,12 @@ ARG user=runner
 ARG home=/home/$user
 ENV PATH="/usr/local/bin:${PATH}"
 
-RUN apk add --no-cache git make musl-dev go nodejs-current npm sudo
-RUN echo '%wheel ALL=(ALL) ALL' > /etc/sudoers.d/wheel
-
-RUN adduser \
-    --disabled-password \
-    --gecos "" \
-    --home $home \
-    --ingroup wheel \
-    $user
-
-RUN echo $user:pw | chpasswd
+RUN apk add --no-cache go nodejs-current npm
 EXPOSE 8080
-ENTRYPOINT ["/bin/server"]
+
+# Use tini to manage zombie processes and signal forwarding
+# https://github.com/krallin/tini
+ENTRYPOINT ["/usr/bin/tini", "--"] 
+
+# Pass the startup script as arguments to Tini
+CMD ["/app/gcsfuse_run.sh"]
